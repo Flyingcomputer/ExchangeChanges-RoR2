@@ -15,4 +15,8 @@ Supports configuration support for every interaction.
 
 **1.0.2**
 
-*Added support for the shrine of chance
+* Added support for the shrine of chance
+
+**1.0.3**
+
+* Fixed not allowing clients without the mod to connect
