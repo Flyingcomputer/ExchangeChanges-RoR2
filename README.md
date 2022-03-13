@@ -20,3 +20,7 @@ Supports configuration support for every interaction.
 **1.0.3**
 
 * Fixed not allowing clients without the mod to connect
+
+**1.0.4**
+
+* Added support for the Lunar cauldrons
