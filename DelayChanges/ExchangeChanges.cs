@@ -25,7 +25,7 @@ namespace ExchangeChanges
         public static ConfigEntry<float> printerDelay { get; set; }
         public static ConfigEntry<float> scrapperDelay { get; set; }
         public static ConfigEntry<float> chanceDelay { get; set; } 
-        //public static ConfigEntry<float> bazaarDelay { get; set; }
+        public static ConfigEntry<float> bazaarDelay { get; set; }
 
 
 
@@ -34,12 +34,12 @@ namespace ExchangeChanges
             printerDelay = base.Config.Bind<float>("Delay Changes", "Printer Delay", 0.3f, "Printer delay in seconds");
             scrapperDelay = base.Config.Bind<float>("Delay Changes", "Scrapper Delay", 0.3f, "Scrapper delay in seconds");
             chanceDelay = base.Config.Bind<float>("Delay Changes", "Shrine of Chance Delay", 0.3f, "Shrine of Chance delay in seconds");
-            //bazaarDelay = base.Config.Bind<float>("Delay Changes", "Bazaar upgrade Delay", 0.3f, "Bazaar item upgrade delay in seconds");
+            bazaarDelay = base.Config.Bind<float>("Delay Changes", "Bazaar trade Delay", 0.4f, "Bazaar item trade delay in seconds");
 
             float p = printerDelay.Value;
             float s = scrapperDelay.Value;
             float c = chanceDelay.Value;
-            //float b = bazaarDelay.Value;
+            float b = bazaarDelay.Value;
 
             On.RoR2.Stage.Start += (orig, self) =>
             {
@@ -51,8 +51,6 @@ namespace ExchangeChanges
                 typeof(EntityStates.Scrapper.WaitToBeginScrapping).SetFieldValue("duration", s);
                 typeof(EntityStates.Scrapper.ScrappingToIdle).SetFieldValue("duration", s);
                 typeof(EntityStates.Scrapper.Scrapping).SetFieldValue("duration", s);
-
-                //typeof(BazaarUpgradeInteraction).SetFieldValue("activationCooldownDuration", 0f);
             };
 
             On.EntityStates.Duplicator.Duplicating.DropDroplet += (orig, self) =>
@@ -78,13 +76,17 @@ namespace ExchangeChanges
                 self.refreshTimer = c;
             };
 
-            /*On.RoR2.BazaarUpgradeInteraction.OnEnable += (orig, self) =>
+            On.RoR2.EntityLogic.DelayedEvent.CallDelayed += (orig, self, timer) =>
             {
-                self.activationTimer = b;
-                orig(self);
-                
-
-            };*/
+                if (self.ToString().Contains("LunarCauldron"))
+                {
+                    orig(self, b);
+                }
+                else
+                {
+                    orig(self, timer);
+                }
+            };
         }
     }
 }
