@@ -20,12 +20,13 @@ namespace ExchangeChanges
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "FlyingComputer";
         public const string PluginName = "ExchangeChanges";
-        public const string PluginVersion = "1.0.3";
+        public const string PluginVersion = "1.0.5";
 
         public static ConfigEntry<float> printerDelay { get; set; }
         public static ConfigEntry<float> scrapperDelay { get; set; }
         public static ConfigEntry<float> chanceDelay { get; set; } 
         public static ConfigEntry<float> bazaarDelay { get; set; }
+        //public static ConfigEntry<float> cleanseDelay { get; set; }
 
 
 
@@ -35,11 +36,16 @@ namespace ExchangeChanges
             scrapperDelay = base.Config.Bind<float>("Delay Changes", "Scrapper Delay", 0.3f, "Scrapper delay in seconds");
             chanceDelay = base.Config.Bind<float>("Delay Changes", "Shrine of Chance Delay", 0.3f, "Shrine of Chance delay in seconds");
             bazaarDelay = base.Config.Bind<float>("Delay Changes", "Bazaar trade Delay", 0.4f, "Bazaar item trade delay in seconds");
+            //cleanseDelay = base.Config.Bind<float>("Delay Changes", "Cleansing Pool Delay", 0.4f, "Cleansing Pool delay in seconds");
 
             float p = printerDelay.Value;
             float s = scrapperDelay.Value;
-            float c = chanceDelay.Value;
+            float ch = chanceDelay.Value;
             float b = bazaarDelay.Value;
+            //float cl = cleanseDelay.Value;
+
+
+
 
             On.RoR2.Stage.Start += (orig, self) =>
             {
@@ -56,32 +62,37 @@ namespace ExchangeChanges
             On.EntityStates.Duplicator.Duplicating.DropDroplet += (orig, self) =>
             {
                 orig(self);
-                if (NetworkServer.active)
+
+                if (NetworkServer.active && self.hasDroppedDroplet)
                 {
-                    self.outer.GetComponent<PurchaseInteraction>().Networkavailable = true;
+                    self.GetComponent<PurchaseInteraction>().Networkavailable = true;
                 }
+
             };
 
-            On.EntityStates.Duplicator.Duplicating.BeginCooking += (orig, self) =>
-            {
-                if (!NetworkServer.active)
-                {
-                    orig(self);
-                }
-            };
 
             On.RoR2.ShrineChanceBehavior.AddShrineStack += (orig, self, interactor) =>
             {
                 orig(self, interactor);
-                self.refreshTimer = c;
+                self.refreshTimer = ch;
             };
 
             On.RoR2.EntityLogic.DelayedEvent.CallDelayed += (orig, self, timer) =>
             {
+                Chat.AddMessage(self.ToString());
+                Chat.AddMessage(timer.ToString());
                 if (self.ToString().Contains("LunarCauldron"))
                 {
                     orig(self, b);
                 }
+                if (self.ToString().Contains("Duplicator"))
+                {
+                    //Nothing
+                }
+                /*if (self.ToString().Contains("ShrineCleanse"))
+                {
+                    orig(self, cl);
+                }*/
                 else
                 {
                     orig(self, timer);
