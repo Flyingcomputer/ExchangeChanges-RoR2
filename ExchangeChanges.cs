@@ -4,6 +4,7 @@ using R2API;
 using R2API.Utils;
 using RoR2;
 using UnityEngine.Networking;
+using System.Runtime.CompilerServices;
 
 namespace ExchangeChanges
 {
@@ -20,7 +21,7 @@ namespace ExchangeChanges
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "FlyingComputer";
         public const string PluginName = "ExchangeChanges";
-        public const string PluginVersion = "1.0.6";
+        public const string PluginVersion = "1.0.7";
 
         public static ConfigEntry<float> printerDelay { get; set; }
         public static ConfigEntry<float> scrapperDelay { get; set; }
@@ -79,10 +80,6 @@ namespace ExchangeChanges
 
             On.RoR2.EntityLogic.DelayedEvent.CallDelayed += (orig, self, timer) =>
             {
-                if (self.ToString().Contains("LunarCauldron"))
-                {
-                    orig(self, b);
-                }
                 if (self.ToString().Contains("Duplicator"))
                 {
                     //Nothing
@@ -95,6 +92,15 @@ namespace ExchangeChanges
                 {
                     orig(self, timer);
                 }
+            };
+
+            On.RoR2.TimerQueue.CreateTimer += (orig, self, time, action) =>
+            {
+                if (action.Target.ToString().Contains("LunarCauldron"))
+                {
+                    return orig(self, b, action);
+                }
+                return orig(self, time, action);
             };
         }
     }

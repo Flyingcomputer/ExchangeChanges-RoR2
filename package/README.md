@@ -32,3 +32,7 @@ Supports configuration support for every interaction.
 **1.0.6**
 
 * Dont output debug directly to the chat, thats bad :)
+
+**1.0.7**
+
+* Fixed Lunar Cauldrons handing out two items for every purchase
