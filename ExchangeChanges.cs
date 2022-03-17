@@ -21,13 +21,13 @@ namespace ExchangeChanges
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "FlyingComputer";
         public const string PluginName = "ExchangeChanges";
-        public const string PluginVersion = "1.0.7";
+        public const string PluginVersion = "1.0.8";
 
         public static ConfigEntry<float> printerDelay { get; set; }
         public static ConfigEntry<float> scrapperDelay { get; set; }
         public static ConfigEntry<float> chanceDelay { get; set; } 
         public static ConfigEntry<float> bazaarDelay { get; set; }
-        //public static ConfigEntry<float> cleanseDelay { get; set; }
+        public static ConfigEntry<float> cleanseDelay { get; set; }
 
 
 
@@ -37,13 +37,13 @@ namespace ExchangeChanges
             scrapperDelay = base.Config.Bind<float>("Delay Changes", "Scrapper Delay", 0.3f, "Scrapper delay in seconds");
             chanceDelay = base.Config.Bind<float>("Delay Changes", "Shrine of Chance Delay", 0.3f, "Shrine of Chance delay in seconds");
             bazaarDelay = base.Config.Bind<float>("Delay Changes", "Bazaar trade Delay", 0.4f, "Bazaar item trade delay in seconds");
-            //cleanseDelay = base.Config.Bind<float>("Delay Changes", "Cleansing Pool Delay", 0.4f, "Cleansing Pool delay in seconds");
+            cleanseDelay = base.Config.Bind<float>("Delay Changes", "Cleansing Pool Delay", 0.5f, "Cleansing Pool delay in seconds");
 
             float p = printerDelay.Value;
             float s = scrapperDelay.Value;
             float ch = chanceDelay.Value;
             float b = bazaarDelay.Value;
-            //float cl = cleanseDelay.Value;
+            float cl = cleanseDelay.Value;
 
 
 
@@ -84,10 +84,6 @@ namespace ExchangeChanges
                 {
                     //Nothing
                 }
-                /*if (self.ToString().Contains("ShrineCleanse"))
-                {
-                    orig(self, cl);
-                }*/
                 else
                 {
                     orig(self, timer);
@@ -99,6 +95,10 @@ namespace ExchangeChanges
                 if (action.Target.ToString().Contains("LunarCauldron"))
                 {
                     return orig(self, b, action);
+                }
+                if (action.Target.ToString().Contains("ShrineCleanse"))
+                {
+                    return orig(self, cl, action);
                 }
                 return orig(self, time, action);
             };

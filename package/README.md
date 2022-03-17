@@ -36,3 +36,7 @@ Supports configuration support for every interaction.
 **1.0.7**
 
 * Fixed Lunar Cauldrons handing out two items for every purchase
+
+**1.0.8**
+
+* Added Support for Cleansing Pools
