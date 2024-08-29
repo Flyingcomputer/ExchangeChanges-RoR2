@@ -1,10 +1,12 @@
 using BepInEx;
 using BepInEx.Configuration;
+using RoR2;
 using R2API;
 using R2API.Utils;
-using RoR2;
+using RoR2.Networking;
+using UnityEngine;
 using UnityEngine.Networking;
-using System.Runtime.CompilerServices;
+
 
 namespace ExchangeChanges
 {
@@ -12,20 +14,18 @@ namespace ExchangeChanges
 
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
 
-    [R2APISubmoduleDependency(nameof(ItemAPI), nameof(LanguageAPI))]
-
-    [NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
+    //[NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
 
     public class ExchangeChanges : BaseUnityPlugin
     {
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "FlyingComputer";
         public const string PluginName = "ExchangeChanges";
-        public const string PluginVersion = "1.0.8";
+        public const string PluginVersion = "1.0.9";
 
         public static ConfigEntry<float> printerDelay { get; set; }
         public static ConfigEntry<float> scrapperDelay { get; set; }
-        public static ConfigEntry<float> chanceDelay { get; set; } 
+        public static ConfigEntry<float> chanceDelay { get; set; }
         public static ConfigEntry<float> bazaarDelay { get; set; }
         public static ConfigEntry<float> cleanseDelay { get; set; }
 
@@ -50,14 +50,21 @@ namespace ExchangeChanges
 
             On.RoR2.Stage.Start += (orig, self) =>
             {
-                orig(self);
-
                 typeof(EntityStates.Duplicator.Duplicating).SetFieldValue("initialDelayDuration", p);
                 typeof(EntityStates.Duplicator.Duplicating).SetFieldValue("timeBetweenStartAndDropDroplet", p);
 
                 typeof(EntityStates.Scrapper.WaitToBeginScrapping).SetFieldValue("duration", s);
                 typeof(EntityStates.Scrapper.ScrappingToIdle).SetFieldValue("duration", s);
                 typeof(EntityStates.Scrapper.Scrapping).SetFieldValue("duration", s);
+
+                return orig(self);
+            };
+
+            On.EntityStates.Duplicator.Duplicating.OnEnter += (orig, self) =>
+            {
+                orig(self);
+                orig.SetFieldValue("initialDelayDuration", p);
+                orig.SetFieldValue("timeBetweenStartAndDropDroplet", p);
             };
 
             On.EntityStates.Duplicator.Duplicating.DropDroplet += (orig, self) =>

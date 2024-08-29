@@ -40,3 +40,7 @@ Supports configuration support for every interaction.
 **1.0.8**
 
 * Added Support for Cleansing Pools
+
+**1.0.9**
+
+* Updated mod to support latest version
