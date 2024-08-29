@@ -44,3 +44,7 @@ Supports configuration support for every interaction.
 **1.0.9**
 
 * Updated mod to support latest version
+
+**1.0.10**
+
+* Fixed not allowing clients without the mod to connect, again

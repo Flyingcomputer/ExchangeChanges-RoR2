@@ -14,14 +14,14 @@ namespace ExchangeChanges
 
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
 
-    //[NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
+    [NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
 
     public class ExchangeChanges : BaseUnityPlugin
     {
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "FlyingComputer";
         public const string PluginName = "ExchangeChanges";
-        public const string PluginVersion = "1.0.9";
+        public const string PluginVersion = "1.0.10";
 
         public static ConfigEntry<float> printerDelay { get; set; }
         public static ConfigEntry<float> scrapperDelay { get; set; }
