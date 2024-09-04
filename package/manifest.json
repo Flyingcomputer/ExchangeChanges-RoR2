@@ -1,6 +1,6 @@
 ﻿{
     "name": "Exchange_Changes",
-    "version_number": "1.0.10",
+    "version_number": "1.1.0",
     "website_url": "https://github.com/Flyingcomputer/ExchangeChanges-RoR2",
     "description": "A mod to simply change the time exchange interactions happen, letting you have faster printers, faster scrappers, and faster shrines of chance!",
     "dependencies": [

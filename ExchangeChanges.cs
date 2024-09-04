@@ -6,11 +6,16 @@ using R2API.Utils;
 using RoR2.Networking;
 using UnityEngine;
 using UnityEngine.Networking;
+using RiskOfOptions;
+using RiskOfOptions.Options;
+using RiskOfOptions.Components;
+using RiskOfOptions.Components.Panel;
 
 
 namespace ExchangeChanges
 {
     [BepInDependency(R2API.R2API.PluginGUID)]
+    [BepInDependency("com.rune580.riskofoptions")]
 
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
 
@@ -21,50 +26,67 @@ namespace ExchangeChanges
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "FlyingComputer";
         public const string PluginName = "ExchangeChanges";
-        public const string PluginVersion = "1.0.10";
+        public const string PluginVersion = "1.1.0";
 
         public static ConfigEntry<float> printerDelay { get; set; }
         public static ConfigEntry<float> scrapperDelay { get; set; }
         public static ConfigEntry<float> chanceDelay { get; set; }
+        public static ConfigEntry<float> mountainDelay { get; set; }
         public static ConfigEntry<float> bazaarDelay { get; set; }
         public static ConfigEntry<float> cleanseDelay { get; set; }
 
-
+        UnityEngine.Events.UnityAction ResetToDefault;
 
         public void Awake()
         {
-            printerDelay = base.Config.Bind<float>("Delay Changes", "Printer Delay", 0.3f, "Printer delay in seconds");
-            scrapperDelay = base.Config.Bind<float>("Delay Changes", "Scrapper Delay", 0.3f, "Scrapper delay in seconds");
-            chanceDelay = base.Config.Bind<float>("Delay Changes", "Shrine of Chance Delay", 0.3f, "Shrine of Chance delay in seconds");
-            bazaarDelay = base.Config.Bind<float>("Delay Changes", "Bazaar trade Delay", 0.4f, "Bazaar item trade delay in seconds");
-            cleanseDelay = base.Config.Bind<float>("Delay Changes", "Cleansing Pool Delay", 0.5f, "Cleansing Pool delay in seconds");
+            
 
-            float p = printerDelay.Value;
-            float s = scrapperDelay.Value;
-            float ch = chanceDelay.Value;
-            float b = bazaarDelay.Value;
-            float cl = cleanseDelay.Value;
+            ConfigEntry<float> printerDelay = base.Config.Bind<float>("Delay Settings", "Printer Delay", 0.6f, "Printer delay in seconds");
+            ConfigEntry<float> scrapperDelay = base.Config.Bind<float>("Delay Settings", "Scrapper Delay", 0.3f, "Scrapper startup delay in seconds");
+            ConfigEntry<float> scrapperItemDelay = base.Config.Bind<float>("Delay Settings", "Scrapper Item Delay", 0.3f, "Scrapper delay between item drops in seconds");
+            ConfigEntry<float> chanceDelay = base.Config.Bind<float>("Delay Settings", "Shrine of Chance Delay", 0.4f, "Shrine of Chance delay in seconds");
+            ConfigEntry<float> mountainDelay = base.Config.Bind<float>("Delay Settings", "Shrine of the Mountain Delay", 0.4f, "Shrine of the Mountain delay in seconds, for those with mods enabling more than one use");
+            ConfigEntry<float> bazaarDelay = base.Config.Bind<float>("Delay Settings", "Bazaar trade Delay", 0.5f, "Bazaar item trade delay in seconds");
+            ConfigEntry<float> cleanseDelay = base.Config.Bind<float>("Delay Settings", "Cleansing Pool Delay", 0.5f, "Cleansing Pool delay in seconds");
 
+            ModSettingsManager.AddOption(new FloatFieldOption(printerDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(scrapperDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(scrapperItemDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(chanceDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(mountainDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(bazaarDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(cleanseDelay));
+
+
+            ResetToDefault += () =>
+            {
+                ModOptionPanelController panel = FindObjectOfType<ModOptionPanelController>();
+                printerDelay.Value = 0.6f;
+                scrapperDelay.Value = 0.3f;
+                scrapperItemDelay.Value = 0.3f;
+                chanceDelay.Value = 0.4f;
+                mountainDelay.Value = 0.4f;
+                bazaarDelay.Value = 0.5f;
+                cleanseDelay.Value = 0.5f;
+
+                panel.RevertChanges();
+            };
+            ModSettingsManager.AddOption(new GenericButtonOption("Reset delay settings to default:", "Delay Settings", "", "RESET", ResetToDefault));
+
+            ModSettingsManager.SetModDescription("Adjust the speed of repeatable interactions");
 
 
 
             On.RoR2.Stage.Start += (orig, self) =>
             {
-                typeof(EntityStates.Duplicator.Duplicating).SetFieldValue("initialDelayDuration", p);
-                typeof(EntityStates.Duplicator.Duplicating).SetFieldValue("timeBetweenStartAndDropDroplet", p);
+                typeof(EntityStates.Duplicator.Duplicating).SetFieldValue("initialDelayDuration", printerDelay.Value / 2.0f);
+                typeof(EntityStates.Duplicator.Duplicating).SetFieldValue("timeBetweenStartAndDropDroplet", printerDelay.Value / 2.0f);
 
-                typeof(EntityStates.Scrapper.WaitToBeginScrapping).SetFieldValue("duration", s);
-                typeof(EntityStates.Scrapper.ScrappingToIdle).SetFieldValue("duration", s);
-                typeof(EntityStates.Scrapper.Scrapping).SetFieldValue("duration", s);
+                typeof(EntityStates.Scrapper.WaitToBeginScrapping).SetFieldValue("duration", scrapperDelay.Value / 2.0f);
+                typeof(EntityStates.Scrapper.Scrapping).SetFieldValue("duration", scrapperDelay.Value / 2.0f);
+                typeof(EntityStates.Scrapper.ScrappingToIdle).SetFieldValue("duration", scrapperItemDelay.Value * 2.0f);
 
                 return orig(self);
-            };
-
-            On.EntityStates.Duplicator.Duplicating.OnEnter += (orig, self) =>
-            {
-                orig(self);
-                orig.SetFieldValue("initialDelayDuration", p);
-                orig.SetFieldValue("timeBetweenStartAndDropDroplet", p);
             };
 
             On.EntityStates.Duplicator.Duplicating.DropDroplet += (orig, self) =>
@@ -75,23 +97,23 @@ namespace ExchangeChanges
                 {
                     self.GetComponent<PurchaseInteraction>().Networkavailable = true;
                 }
-
             };
 
-
-            On.RoR2.ShrineChanceBehavior.AddShrineStack += (orig, self, interactor) =>
+            On.RoR2.PurchaseInteraction.OnInteractionBegin += (orig, self, interactor) =>
             {
                 orig(self, interactor);
-                self.refreshTimer = ch;
+                if(self.displayNameToken == "SHRINE_BOSS_NAME")
+                    self.GetComponent<ShrineBossBehavior>().refreshTimer = mountainDelay.Value;
+
+                if(self.displayNameToken == "SHRINE_CHANCE_NAME")
+                    self.GetComponent<ShrineChanceBehavior>().refreshTimer = chanceDelay.Value;
+                    
             };
 
+            //Fixes the printer not dropping items at low timers, don't remember why
             On.RoR2.EntityLogic.DelayedEvent.CallDelayed += (orig, self, timer) =>
             {
-                if (self.ToString().Contains("Duplicator"))
-                {
-                    //Nothing
-                }
-                else
+                if (!self.ToString().Contains("Duplicator"))
                 {
                     orig(self, timer);
                 }
@@ -101,11 +123,11 @@ namespace ExchangeChanges
             {
                 if (action.Target.ToString().Contains("LunarCauldron"))
                 {
-                    return orig(self, b, action);
+                    return orig(self, bazaarDelay.Value, action);
                 }
                 if (action.Target.ToString().Contains("ShrineCleanse"))
                 {
-                    return orig(self, cl, action);
+                    return orig(self, cleanseDelay.Value, action);
                 }
                 return orig(self, time, action);
             };
