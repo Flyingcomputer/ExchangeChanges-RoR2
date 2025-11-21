@@ -52,3 +52,11 @@ Supports configuration support for every interaction.
 **1.1.0**
 
 * Added support for riskofoptions ingame, and fixed timing issues with various objects
+
+**1.1.1**
+
+* Fixed missing riskofoptions dependency
+
+**1.1.2**
+
+* Added support for Shrine of the Woods and Shrines of blood, and updated dependencies

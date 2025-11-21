@@ -26,7 +26,7 @@ namespace ExchangeChanges
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "FlyingComputer";
         public const string PluginName = "ExchangeChanges";
-        public const string PluginVersion = "1.1.0";
+        public const string PluginVersion = "1.1.2";
 
         public static ConfigEntry<float> printerDelay { get; set; }
         public static ConfigEntry<float> scrapperDelay { get; set; }
@@ -34,6 +34,8 @@ namespace ExchangeChanges
         public static ConfigEntry<float> mountainDelay { get; set; }
         public static ConfigEntry<float> bazaarDelay { get; set; }
         public static ConfigEntry<float> cleanseDelay { get; set; }
+        public static ConfigEntry<float> woodsDelay { get; set; }
+        public static ConfigEntry<float> bloodDelay { get; set; }
 
         UnityEngine.Events.UnityAction ResetToDefault;
 
@@ -48,6 +50,8 @@ namespace ExchangeChanges
             ConfigEntry<float> mountainDelay = base.Config.Bind<float>("Delay Settings", "Shrine of the Mountain Delay", 0.4f, "Shrine of the Mountain delay in seconds, for those with mods enabling more than one use");
             ConfigEntry<float> bazaarDelay = base.Config.Bind<float>("Delay Settings", "Bazaar trade Delay", 0.5f, "Bazaar item trade delay in seconds");
             ConfigEntry<float> cleanseDelay = base.Config.Bind<float>("Delay Settings", "Cleansing Pool Delay", 0.5f, "Cleansing Pool delay in seconds");
+            ConfigEntry<float> woodsDelay = base.Config.Bind<float>("Delay Settings", "Shrine of the Woods Delay", 0.5f, "Shrine of the Woods delay in seconds");
+            ConfigEntry<float> bloodDelay = base.Config.Bind<float>("Delay Settings", "Shrine of Blood Delay", 0.5f, "Shrine of Blood delay in seconds");
 
             ModSettingsManager.AddOption(new FloatFieldOption(printerDelay));
             ModSettingsManager.AddOption(new FloatFieldOption(scrapperDelay));
@@ -56,6 +60,8 @@ namespace ExchangeChanges
             ModSettingsManager.AddOption(new FloatFieldOption(mountainDelay));
             ModSettingsManager.AddOption(new FloatFieldOption(bazaarDelay));
             ModSettingsManager.AddOption(new FloatFieldOption(cleanseDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(woodsDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(bloodDelay));
 
 
             ResetToDefault += () =>
@@ -68,6 +74,8 @@ namespace ExchangeChanges
                 mountainDelay.Value = 0.4f;
                 bazaarDelay.Value = 0.5f;
                 cleanseDelay.Value = 0.5f;
+                woodsDelay.Value = 0.5f;
+                bloodDelay.Value = 0.5f;
 
                 panel.RevertChanges();
             };
@@ -108,6 +116,18 @@ namespace ExchangeChanges
                 if(self.displayNameToken == "SHRINE_CHANCE_NAME")
                     self.GetComponent<ShrineChanceBehavior>().refreshTimer = chanceDelay.Value;
                     
+            };
+
+            On.RoR2.ShrineHealingBehavior.AddShrineStack += (orig, self, interactor) =>
+            {
+                orig(self, interactor);
+                self.refreshTimer = woodsDelay.Value;
+            };
+
+            On.RoR2.ShrineBloodBehavior.AddShrineStack += (orig, self, interactor) =>
+            {
+                orig(self, interactor);
+                self.refreshTimer = bloodDelay.Value;
             };
 
             //Fixes the printer not dropping items at low timers, don't remember why
