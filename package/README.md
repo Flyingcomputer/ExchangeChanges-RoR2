@@ -60,3 +60,7 @@ Supports configuration support for every interaction.
 **1.1.2**
 
 * Added support for Shrine of the Woods and Shrines of blood, and updated dependencies
+
+**1.1.3**
+
+* Added support for the Wandering Chef, Drone Multishop, Drone Scrapper, and Drone Combiner
