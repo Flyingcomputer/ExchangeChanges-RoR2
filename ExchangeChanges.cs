@@ -26,7 +26,7 @@ namespace ExchangeChanges
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "FlyingComputer";
         public const string PluginName = "ExchangeChanges";
-        public const string PluginVersion = "1.1.3";
+        public const string PluginVersion = "1.1.4";
 
         public static ConfigEntry<float> printerDelay { get; set; }
         public static ConfigEntry<float> scrapperDelay { get; set; }
@@ -57,6 +57,8 @@ namespace ExchangeChanges
         private static float baseChefCookingDelay { get; set; }
         private static float baseChefIdleDelay { get; set; }
         private static float baseChefTotalDelay { get; set; }
+
+        private static bool hasGatheredDefaults { get; set; }
 
         UnityEngine.Events.UnityAction ResetToDefault;
 
@@ -117,12 +119,9 @@ namespace ExchangeChanges
 
             ModSettingsManager.SetModDescription("Adjust the speed of repeatable interactions");
 
-
-
             On.RoR2.Stage.Start += (orig, self) =>
             {
-                //Only runs at start of a run, probably will break if using something like a save mod to leave the run and rejoin
-                if (Run.instance.stageClearCount == 0)
+                if (!hasGatheredDefaults)
                 {
                     baseDroneVendorDelay = EntityStates.DroneVendor.DroneVendorDispatchState.duration;
                     baseDroneVendorSpawnDelay = EntityStates.DroneVendor.DroneVendorDispatchState.spawnTime;
@@ -138,6 +137,8 @@ namespace ExchangeChanges
                     baseChefCookingDelay = EntityStates.MealPrep.Cooking.duration;
                     baseChefIdleDelay = EntityStates.MealPrep.CookingToIdle.duration;
                     baseChefTotalDelay = baseChefWaitDelay + baseChefCookingDelay + baseChefIdleDelay;
+
+                    hasGatheredDefaults = true;
                 }
 
                 typeof(EntityStates.Duplicator.Duplicating).SetFieldValue("initialDelayDuration", printerDelay.Value / 2.0f);

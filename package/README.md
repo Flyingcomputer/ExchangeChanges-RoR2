@@ -64,3 +64,7 @@ Supports configuration support for every interaction.
 **1.1.3**
 
 * Added support for the Wandering Chef, Drone Multishop, Drone Scrapper, and Drone Combiner
+
+**1.1.4**
+
+* Simple fix for interaction between this mod and ProperSave
