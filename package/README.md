@@ -68,3 +68,9 @@ Supports configuration support for every interaction.
 **1.1.4**
 
 * Simple fix for interaction between this mod and ProperSave
+
+**1.1.5**
+
+* Fix Drone Multishop breaking when delay set to 0
+* RiskofOptions support is now optional
+* Updated dependencies

@@ -1,35 +1,34 @@
 using BepInEx;
 using BepInEx.Configuration;
-using RoR2;
 using R2API;
 using R2API.Utils;
-using RoR2.Networking;
-using UnityEngine;
-using UnityEngine.Networking;
 using RiskOfOptions;
-using RiskOfOptions.Options;
 using RiskOfOptions.Components;
 using RiskOfOptions.Components.Panel;
+using RiskOfOptions.Options;
+using RoR2;
+using RoR2.Networking;
+using System.Runtime.CompilerServices;
+using UnityEngine;
+using UnityEngine.Networking;
 
 
 namespace ExchangeChanges
 {
     [BepInDependency(R2API.R2API.PluginGUID)]
-    [BepInDependency("com.rune580.riskofoptions")]
-
+    [BepInDependency("com.rune580.riskofoptions", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
-
     [NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
-
     public class ExchangeChanges : BaseUnityPlugin
     {
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "FlyingComputer";
         public const string PluginName = "ExchangeChanges";
-        public const string PluginVersion = "1.1.4";
+        public const string PluginVersion = "1.1.5";
 
         public static ConfigEntry<float> printerDelay { get; set; }
         public static ConfigEntry<float> scrapperDelay { get; set; }
+        public static ConfigEntry<float> scrapperItemDelay { get; set; }
         public static ConfigEntry<float> chanceDelay { get; set; }
         public static ConfigEntry<float> mountainDelay { get; set; }
         public static ConfigEntry<float> bazaarDelay { get; set; }
@@ -41,7 +40,7 @@ namespace ExchangeChanges
         public static ConfigEntry<float> droneScrapperDelay { get; set; }
         public static ConfigEntry<float> droneCombinerDelay { get; set; }
         public static ConfigEntry<float> chefDelay { get; set; }
-        
+
 
         private static float baseDroneVendorDelay { get; set; }
         private static float baseDroneVendorSpawnDelay { get; set; }
@@ -60,64 +59,27 @@ namespace ExchangeChanges
 
         private static bool hasGatheredDefaults { get; set; }
 
-        UnityEngine.Events.UnityAction ResetToDefault;
+        public static UnityEngine.Events.UnityAction ResetToDefault;
 
         public void Awake()
         {
-            ConfigEntry<float> printerDelay = base.Config.Bind<float>("Delay Settings", "Printer Delay", 0.6f, "Printer delay in seconds");
-            ConfigEntry<float> scrapperDelay = base.Config.Bind<float>("Delay Settings", "Scrapper Delay", 0.3f, "Scrapper startup delay in seconds");
-            ConfigEntry<float> scrapperItemDelay = base.Config.Bind<float>("Delay Settings", "Scrapper Item Delay", 0.3f, "Scrapper delay between item drops in seconds");
-            ConfigEntry<float> chanceDelay = base.Config.Bind<float>("Delay Settings", "Shrine of Chance Delay", 0.4f, "Shrine of Chance delay in seconds");
-            ConfigEntry<float> mountainDelay = base.Config.Bind<float>("Delay Settings", "Shrine of the Mountain Delay", 0.4f, "Shrine of the Mountain delay in seconds, for those with mods enabling more than one use");
-            ConfigEntry<float> bazaarDelay = base.Config.Bind<float>("Delay Settings", "Bazaar trade Delay", 0.5f, "Bazaar item trade delay in seconds");
-            ConfigEntry<float> cleanseDelay = base.Config.Bind<float>("Delay Settings", "Cleansing Pool Delay", 0.5f, "Cleansing Pool delay in seconds");
-            ConfigEntry<float> woodsDelay = base.Config.Bind<float>("Delay Settings", "Shrine of the Woods Delay", 0.5f, "Shrine of the Woods delay in seconds");
-            ConfigEntry<float> bloodDelay = base.Config.Bind<float>("Delay Settings", "Shrine of Blood Delay", 0.5f, "Shrine of Blood delay in seconds");
-            ConfigEntry<float> droneVendorDelay = base.Config.Bind<float>("Delay Settings", "Drone Vendor Delay", 1.0f, "Drone Vendor delay in seconds");
-            ConfigEntry<float> droneScrapperStartupDelay = base.Config.Bind<float>("Delay Settings", "Drone Scrapper Startup Delay", 0.1f, "Drone Scrapper startup delay in seconds");
-            ConfigEntry<float> droneScrapperDelay = base.Config.Bind<float>("Delay Settings", "Drone Scrapper Delay", 0.5f, "Drone Scrapper delay in seconds");
-            ConfigEntry<float> droneCombinerDelay = base.Config.Bind<float>("Delay Settings", "Drone Combiner Delay", 0.7f, "Drone Combiner Station delay in seconds");
-            ConfigEntry<float> chefDelay = base.Config.Bind<float>("Delay Settings", "Wandering Chef Delay", 0.5f, "Wandering Chef delay in seconds");
 
-            ModSettingsManager.AddOption(new FloatFieldOption(printerDelay));
-            ModSettingsManager.AddOption(new FloatFieldOption(scrapperDelay));
-            ModSettingsManager.AddOption(new FloatFieldOption(scrapperItemDelay));
-            ModSettingsManager.AddOption(new FloatFieldOption(chanceDelay));
-            ModSettingsManager.AddOption(new FloatFieldOption(mountainDelay));
-            ModSettingsManager.AddOption(new FloatFieldOption(bazaarDelay));
-            ModSettingsManager.AddOption(new FloatFieldOption(cleanseDelay));
-            ModSettingsManager.AddOption(new FloatFieldOption(woodsDelay));
-            ModSettingsManager.AddOption(new FloatFieldOption(bloodDelay));
-            ModSettingsManager.AddOption(new FloatFieldOption(droneVendorDelay));
-            ModSettingsManager.AddOption(new FloatFieldOption(droneScrapperStartupDelay));
-            ModSettingsManager.AddOption(new FloatFieldOption(droneScrapperDelay));
-            ModSettingsManager.AddOption(new FloatFieldOption(droneCombinerDelay));
-            ModSettingsManager.AddOption(new FloatFieldOption(chefDelay));
+            printerDelay = Config.Bind<float>("Delay Settings", "Printer Delay", 0.6f, "Printer delay in seconds");
+            scrapperDelay = Config.Bind<float>("Delay Settings", "Scrapper Delay", 0.3f, "Scrapper startup delay in seconds");
+            scrapperItemDelay = Config.Bind<float>("Delay Settings", "Scrapper Item Delay", 0.3f, "Scrapper delay between item drops in seconds");
+            chanceDelay = Config.Bind<float>("Delay Settings", "Shrine of Chance Delay", 0.4f, "Shrine of Chance delay in seconds");
+            mountainDelay = Config.Bind<float>("Delay Settings", "Shrine of the Mountain Delay", 0.4f, "Shrine of the Mountain delay in seconds, for those with mods enabling more than one use");
+            bazaarDelay = Config.Bind<float>("Delay Settings", "Bazaar trade Delay", 0.5f, "Bazaar item trade delay in seconds");
+            cleanseDelay = Config.Bind<float>("Delay Settings", "Cleansing Pool Delay", 0.5f, "Cleansing Pool delay in seconds");
+            woodsDelay = Config.Bind<float>("Delay Settings", "Shrine of the Woods Delay", 0.5f, "Shrine of the Woods delay in seconds");
+            bloodDelay = Config.Bind<float>("Delay Settings", "Shrine of Blood Delay", 0.5f, "Shrine of Blood delay in seconds");
+            droneVendorDelay = Config.Bind<float>("Delay Settings", "Drone Vendor Delay", 1.0f, "Drone Vendor delay in seconds");
+            droneScrapperStartupDelay = Config.Bind<float>("Delay Settings", "Drone Scrapper Startup Delay", 0.1f, "Drone Scrapper startup delay in seconds");
+            droneScrapperDelay = Config.Bind<float>("Delay Settings", "Drone Scrapper Delay", 0.5f, "Drone Scrapper delay in seconds");
+            droneCombinerDelay = Config.Bind<float>("Delay Settings", "Drone Combiner Delay", 0.7f, "Drone Combiner Station delay in seconds");
+            chefDelay = Config.Bind<float>("Delay Settings", "Wandering Chef Delay", 0.5f, "Wandering Chef delay in seconds");
 
-
-            ResetToDefault += () =>
-            {
-                ModOptionPanelController panel = FindObjectOfType<ModOptionPanelController>();
-                printerDelay.Value = 0.6f;
-                scrapperDelay.Value = 0.3f;
-                scrapperItemDelay.Value = 0.3f;
-                chanceDelay.Value = 0.4f;
-                mountainDelay.Value = 0.4f;
-                bazaarDelay.Value = 0.5f;
-                cleanseDelay.Value = 0.5f;
-                woodsDelay.Value = 0.5f;
-                bloodDelay.Value = 0.5f;
-                droneVendorDelay.Value = 1.0f;
-                droneScrapperStartupDelay.Value = 0.1f;
-                droneScrapperDelay.Value = 0.5f;
-                droneCombinerDelay.Value = 0.7f;
-                chefDelay.Value = 0.5f;
-
-                panel.RevertChanges();
-            };
-            ModSettingsManager.AddOption(new GenericButtonOption("Reset delay settings to default:", "Delay Settings", "", "RESET", ResetToDefault));
-
-            ModSettingsManager.SetModDescription("Adjust the speed of repeatable interactions");
+            checkRoo();
 
             On.RoR2.Stage.Start += (orig, self) =>
             {
@@ -179,10 +141,10 @@ namespace ExchangeChanges
             On.RoR2.PurchaseInteraction.OnInteractionBegin += (orig, self, interactor) =>
             {
                 orig(self, interactor);
-                if(self.displayNameToken == "SHRINE_BOSS_NAME")
+                if (self.displayNameToken == "SHRINE_BOSS_NAME")
                     self.GetComponent<ShrineBossBehavior>().refreshTimer = mountainDelay.Value;
 
-                if(self.displayNameToken == "SHRINE_CHANCE_NAME")
+                if (self.displayNameToken == "SHRINE_CHANCE_NAME")
                     self.GetComponent<ShrineChanceBehavior>().refreshTimer = chanceDelay.Value;
             };
 
@@ -222,15 +184,68 @@ namespace ExchangeChanges
 
             On.EntityStates.DroneVendor.DroneVendorDispatchState.OnEnter += (orig, self) =>
             {
-                self.GetModelAnimator().speed = baseDroneVendorTotalDelay / droneVendorDelay.Value;
+                float val = droneVendorDelay.Value <= 0.0f ? 100.0f : baseDroneVendorTotalDelay / droneVendorDelay.Value;
+                self.GetModelAnimator().speed = val;
                 orig(self);
             };
 
             On.EntityStates.DroneVendor.DroneVendorAssumeIdle.OnEnter += (orig, self) =>
             {
-                self.GetModelAnimator().speed = baseDroneVendorTotalDelay / droneVendorDelay.Value;
+                float val = droneVendorDelay.Value <= 0.0f ? 100.0f : baseDroneVendorTotalDelay / droneVendorDelay.Value;
+                self.GetModelAnimator().speed = val;
                 orig(self);
             };
+        }
+
+        public static void checkRoo()
+        {
+            if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.rune580.riskofoptions"))
+                initRoo();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        public static void initRoo()
+        {
+            ModSettingsManager.SetModDescription("Adjust the speed of repeatable interactions");
+
+            ModSettingsManager.AddOption(new FloatFieldOption(printerDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(scrapperDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(scrapperItemDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(chanceDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(mountainDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(bazaarDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(cleanseDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(woodsDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(bloodDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(droneVendorDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(droneScrapperStartupDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(droneScrapperDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(droneCombinerDelay));
+            ModSettingsManager.AddOption(new FloatFieldOption(chefDelay));
+
+
+            ResetToDefault += () =>
+            {
+                ModOptionPanelController panel = FindObjectOfType<ModOptionPanelController>();
+                printerDelay.Value = 0.6f;
+                scrapperDelay.Value = 0.3f;
+                scrapperItemDelay.Value = 0.3f;
+                chanceDelay.Value = 0.4f;
+                mountainDelay.Value = 0.4f;
+                bazaarDelay.Value = 0.5f;
+                cleanseDelay.Value = 0.5f;
+                woodsDelay.Value = 0.5f;
+                bloodDelay.Value = 0.5f;
+                droneVendorDelay.Value = 1.0f;
+                droneScrapperStartupDelay.Value = 0.1f;
+                droneScrapperDelay.Value = 0.5f;
+                droneCombinerDelay.Value = 0.7f;
+                chefDelay.Value = 0.5f;
+
+                panel.RevertChanges();
+            };
+
+            ModSettingsManager.AddOption(new GenericButtonOption("Reset delay settings to default:", "Delay Settings", "", "RESET", ResetToDefault));
         }
     }
 }
